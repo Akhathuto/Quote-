@@ -1,0 +1,5 @@
+{
+  "name": "Edgtec RFQ Assistant",
+  "description": "An application to help complete quotations and RFQs with verified suppliers in South Africa. Users can upload documents and logos, and the app uses AI to find the best trusted suppliers, providing details like lead time, payment methods, and location.",
+  "requestFramePermissions": []
+}
