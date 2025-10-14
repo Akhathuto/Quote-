@@ -1,9 +1,11 @@
-
 import React, { useState } from 'react';
 import type { RFQ, Supplier } from '../types';
 import { findSuppliers } from '../services/geminiService';
 import FileUpload from '../components/FileUpload';
-import { Search, Loader, ServerCrash, ExternalLink, MapPin, Clock, CreditCard as CreditCardIcon } from 'lucide-react';
+import { Search, Loader, ServerCrash, ExternalLink, MapPin, Clock, CreditCard as CreditCardIcon, FileText, Download } from 'lucide-react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
 
 const DashboardPage: React.FC = () => {
   const [rfq, setRfq] = useState<RFQ>({ projectName: '', items: '' });
@@ -39,6 +41,79 @@ const DashboardPage: React.FC = () => {
       setIsLoading(false);
     }
   };
+  
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handleExportPDF = async () => {
+    const doc = new jsPDF();
+    const tableColumn = ["Supplier Name", "Location", "Lead Time", "Payment Methods", "Website"];
+    const tableRows: (string | string[])[][] = suppliers.map(s => [
+      s.name, s.location, s.leadTime, s.paymentMethods.join(', '), s.website
+    ]);
+
+    let startY = 15;
+
+    if (rfq.logo) {
+      try {
+        const logoDataUrl = await fileToBase64(rfq.logo);
+        const img = new Image();
+        img.src = logoDataUrl;
+        await new Promise(resolve => { img.onload = resolve; });
+        const aspectRatio = img.width / img.height;
+        const logoWidth = 35;
+        const logoHeight = logoWidth / aspectRatio;
+        doc.addImage(logoDataUrl, 'PNG', 15, 15, logoWidth, logoHeight);
+        startY = 25 + logoHeight;
+      } catch (e) {
+        console.error("Error adding logo to PDF", e);
+        startY = 25;
+      }
+    }
+    
+    doc.setFontSize(18);
+    doc.text(`RFQ Results: ${rfq.projectName}`, 14, startY);
+    
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: startY + 10,
+    });
+    
+    doc.save(`RFQ_${rfq.projectName.replace(/\s+/g, '_')}_Suppliers.pdf`);
+  };
+
+  const handleExportCSV = () => {
+    const headers = ["Supplier Name", "Website", "Location", "Lead Time", "Payment Methods"];
+    const csvRows = [
+      headers.join(','),
+      ...suppliers.map(s => [
+        `"${s.name.replace(/"/g, '""')}"`,
+        `"${s.website}"`,
+        `"${s.location.replace(/"/g, '""')}"`,
+        `"${s.leadTime.replace(/"/g, '""')}"`,
+        `"${s.paymentMethods.join('; ')}"`
+      ].join(','))
+    ];
+
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `RFQ_${rfq.projectName.replace(/\s+/g, '_')}_Suppliers.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <div className="space-y-8">
@@ -83,7 +158,7 @@ const DashboardPage: React.FC = () => {
             />
             <FileUpload
               id="company-logo"
-              label="Upload Company Logo (Optional)"
+              label="Upload Company Logo (For PDF Export)"
               file={rfq.logo}
               onFileChange={handleFileChange('logo')}
               accept="image/*"
@@ -120,7 +195,25 @@ const DashboardPage: React.FC = () => {
 
       {suppliers.length > 0 && (
         <div>
-          <h2 className="text-2xl font-bold text-white mb-4">Verified Supplier Results</h2>
+           <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold text-white">Verified Supplier Results</h2>
+            <div className="flex space-x-3">
+              <button
+                onClick={handleExportPDF}
+                className="flex items-center py-2 px-4 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-300 bg-brand-secondary hover:bg-gray-700 transition-colors"
+              >
+                <FileText size={16} className="mr-2" />
+                Export PDF
+              </button>
+              <button
+                onClick={handleExportCSV}
+                className="flex items-center py-2 px-4 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-300 bg-brand-secondary hover:bg-gray-700 transition-colors"
+              >
+                <Download size={16} className="mr-2" />
+                Export CSV
+              </button>
+            </div>
+          </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             {suppliers.map((supplier, index) => (
               <div key={index} className="bg-brand-secondary border border-gray-700 rounded-lg p-6 flex flex-col justify-between space-y-4 hover:border-brand-primary transition-colors">
