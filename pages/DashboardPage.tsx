@@ -2,9 +2,28 @@ import React, { useState } from 'react';
 import type { RFQ, Supplier } from '../types';
 import { findSuppliers } from '../services/geminiService';
 import FileUpload from '../components/FileUpload';
-import { Search, Loader, ServerCrash, ExternalLink, MapPin, Clock, CreditCard as CreditCardIcon, FileText, Download } from 'lucide-react';
+import { Search, Loader, ServerCrash, ExternalLink, MapPin, Clock, CreditCard as CreditCardIcon, FileText, Download, Frown } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+
+const SkeletonCard = () => (
+  <div className="bg-brand-secondary border border-gray-700 rounded-lg p-6 animate-pulse">
+    <div className="h-6 bg-gray-600 rounded w-3/4 mb-4"></div>
+    <div className="h-4 bg-gray-600 rounded w-full mb-6"></div>
+    <div className="space-y-3 pt-4 border-t border-gray-700">
+      <div className="h-4 bg-gray-600 rounded w-1/2"></div>
+      <div className="h-4 bg-gray-600 rounded w-5/6"></div>
+    </div>
+  </div>
+);
+
+const NoResults = () => (
+  <div className="bg-brand-secondary border border-dashed border-gray-700 text-gray-400 p-8 rounded-lg text-center">
+    <Frown className="mx-auto h-12 w-12 text-gray-500 mb-4" />
+    <h3 className="text-xl font-bold text-white">No Suppliers Found</h3>
+    <p className="mt-2 text-sm">We couldn't find any suppliers matching your request. Please try refining your search terms for better results.</p>
+  </div>
+);
 
 
 const DashboardPage: React.FC = () => {
@@ -12,6 +31,7 @@ const DashboardPage: React.FC = () => {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -30,6 +50,7 @@ const DashboardPage: React.FC = () => {
     }
     setError(null);
     setIsLoading(true);
+    setHasSearched(true);
     setSuppliers([]);
 
     try {
@@ -193,51 +214,77 @@ const DashboardPage: React.FC = () => {
         </div>
       )}
 
-      {suppliers.length > 0 && (
+      {hasSearched && !isLoading && !error && (
         <div>
-           <div className="flex justify-between items-center mb-4">
+          <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold text-white">Verified Supplier Results</h2>
-            <div className="flex space-x-3">
-              <button
-                onClick={handleExportPDF}
-                className="flex items-center py-2 px-4 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-300 bg-brand-secondary hover:bg-gray-700 transition-colors"
-              >
-                <FileText size={16} className="mr-2" />
-                Export PDF
-              </button>
-              <button
-                onClick={handleExportCSV}
-                className="flex items-center py-2 px-4 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-300 bg-brand-secondary hover:bg-gray-700 transition-colors"
-              >
-                <Download size={16} className="mr-2" />
-                Export CSV
-              </button>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {suppliers.map((supplier, index) => (
-              <div key={index} className="bg-brand-secondary border border-gray-700 rounded-lg p-6 flex flex-col justify-between space-y-4 hover:border-brand-primary transition-colors">
-                <div>
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-xl font-bold text-white">{supplier.name}</h3>
-                    <a href={supplier.website} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-brand-primary">
-                      <ExternalLink size={20} />
-                    </a>
-                  </div>
-                  <p className="text-gray-400 text-sm flex items-center mt-2">
-                    <MapPin size={14} className="mr-2 flex-shrink-0" />
-                    {supplier.location}
-                  </p>
-                </div>
-                <div className="text-sm space-y-2 text-gray-300 pt-4 border-t border-gray-700">
-                    <p className="flex items-center"><Clock size={14} className="mr-2 flex-shrink-0 text-brand-accent" />Lead Time: <span className="font-semibold ml-1">{supplier.leadTime}</span></p>
-                    <p className="flex items-start"><CreditCardIcon size={14} className="mr-2 mt-0.5 flex-shrink-0 text-brand-accent" />Payment: <span className="font-semibold ml-1">{supplier.paymentMethods.join(', ')}</span></p>
-                </div>
+            {suppliers.length > 0 && (
+              <div className="flex space-x-3">
+                <button
+                  onClick={handleExportPDF}
+                  className="flex items-center py-2 px-4 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-300 bg-brand-secondary hover:bg-gray-700 transition-colors"
+                >
+                  <FileText size={16} className="mr-2" />
+                  Export PDF
+                </button>
+                <button
+                  onClick={handleExportCSV}
+                  className="flex items-center py-2 px-4 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-300 bg-brand-secondary hover:bg-gray-700 transition-colors"
+                >
+                  <Download size={16} className="mr-2" />
+                  Export CSV
+                </button>
               </div>
-            ))}
+            )}
+          </div>
+          {suppliers.length > 0 ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {suppliers.map((supplier, index) => (
+                <div key={index} className="bg-brand-secondary border border-gray-700 rounded-lg p-6 flex flex-col justify-between space-y-4 hover:border-brand-primary transition-colors">
+                  <div>
+                    <div className="flex justify-between items-start">
+                      <h3 className="text-xl font-bold text-white">{supplier.name}</h3>
+                      <a href={supplier.website} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-brand-primary">
+                        <ExternalLink size={20} />
+                      </a>
+                    </div>
+                    <p className="text-gray-400 text-sm flex items-center mt-2">
+                      <MapPin size={14} className="mr-2 flex-shrink-0" />
+                      {supplier.location}
+                    </p>
+                  </div>
+                  <div className="text-sm space-y-3 text-gray-300 pt-4 border-t border-gray-700">
+                    <p className="flex items-center"><Clock size={14} className="mr-2 flex-shrink-0 text-brand-accent" />Lead Time: <span className="font-semibold ml-1">{supplier.leadTime}</span></p>
+                    <div className="flex items-start">
+                      <CreditCardIcon size={14} className="mr-2 mt-1 flex-shrink-0 text-brand-accent" />
+                      <div className="flex flex-wrap gap-1">
+                        <span className="font-normal mr-1">Payment:</span>
+                        {supplier.paymentMethods.map(method => (
+                           <span key={method} className="bg-brand-dark text-xs font-semibold text-gray-300 px-2 py-0.5 rounded-full">{method}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+             <NoResults />
+          )}
+        </div>
+      )}
+
+      {isLoading && (
+        <div>
+          <h2 className="text-2xl font-bold text-white mb-4">Searching...</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
           </div>
         </div>
       )}
+
     </div>
   );
 };
