@@ -7,12 +7,30 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 const SkeletonCard = () => (
-  <div className="bg-brand-secondary border border-gray-700 rounded-lg p-6 animate-pulse">
-    <div className="h-6 bg-gray-600 rounded w-3/4 mb-4"></div>
-    <div className="h-4 bg-gray-600 rounded w-full mb-6"></div>
+  <div className="bg-brand-secondary border border-gray-700 rounded-lg p-6 animate-pulse flex flex-col justify-between space-y-4">
+    <div>
+      <div className="flex justify-between items-start">
+        <div className="h-6 bg-gray-600 rounded w-3/4"></div> {/* Title */}
+        <div className="h-5 w-5 bg-gray-600 rounded"></div> {/* ExternalLink icon placeholder */}
+      </div>
+      <div className="flex items-center mt-3">
+        <div className="h-4 w-4 bg-gray-600 rounded mr-2"></div> {/* MapPin icon placeholder */}
+        <div className="h-4 bg-gray-600 rounded w-full"></div> {/* Location */}
+      </div>
+    </div>
     <div className="space-y-3 pt-4 border-t border-gray-700">
-      <div className="h-4 bg-gray-600 rounded w-1/2"></div>
-      <div className="h-4 bg-gray-600 rounded w-5/6"></div>
+      <div className="flex items-center">
+        <div className="h-4 w-4 bg-gray-600 rounded mr-2"></div> {/* Clock icon placeholder */}
+        <div className="h-4 bg-gray-600 rounded w-1/2"></div> {/* Lead Time */}
+      </div>
+      <div className="flex items-start">
+        <div className="h-4 w-4 bg-gray-600 rounded mr-2 mt-0.5"></div> {/* CreditCardIcon placeholder */}
+        <div className="flex flex-wrap gap-1 w-full">
+            <div className="h-4 bg-gray-600 rounded-full w-1/4"></div> {/* Payment method pill */}
+            <div className="h-4 bg-gray-600 rounded-full w-1/3"></div> {/* Payment method pill */}
+            <div className="h-4 bg-gray-600 rounded-full w-1/4"></div> {/* Payment method pill */}
+        </div>
+      </div>
     </div>
   </div>
 );
@@ -214,11 +232,13 @@ const DashboardPage: React.FC = () => {
         </div>
       )}
 
-      {hasSearched && !isLoading && !error && (
+      {hasSearched && !error && (
         <div>
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold text-white">Verified Supplier Results</h2>
-            {suppliers.length > 0 && (
+            <h2 className="text-2xl font-bold text-white">
+                {isLoading ? 'Searching for Suppliers...' : 'Verified Supplier Results'}
+            </h2>
+            {!isLoading && suppliers.length > 0 && (
               <div className="flex space-x-3">
                 <button
                   onClick={handleExportPDF}
@@ -237,54 +257,51 @@ const DashboardPage: React.FC = () => {
               </div>
             )}
           </div>
-          {suppliers.length > 0 ? (
+          
+          {isLoading ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {suppliers.map((supplier, index) => (
-                <div key={index} className="bg-brand-secondary border border-gray-700 rounded-lg p-6 flex flex-col justify-between space-y-4 hover:border-brand-primary transition-colors">
-                  <div>
-                    <div className="flex justify-between items-start">
-                      <h3 className="text-xl font-bold text-white">{supplier.name}</h3>
-                      <a href={supplier.website} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-brand-primary">
-                        <ExternalLink size={20} />
-                      </a>
-                    </div>
-                    <p className="text-gray-400 text-sm flex items-center mt-2">
-                      <MapPin size={14} className="mr-2 flex-shrink-0" />
-                      {supplier.location}
-                    </p>
-                  </div>
-                  <div className="text-sm space-y-3 text-gray-300 pt-4 border-t border-gray-700">
-                    <p className="flex items-center"><Clock size={14} className="mr-2 flex-shrink-0 text-brand-accent" />Lead Time: <span className="font-semibold ml-1">{supplier.leadTime}</span></p>
-                    <div className="flex items-start">
-                      <CreditCardIcon size={14} className="mr-2 mt-1 flex-shrink-0 text-brand-accent" />
-                      <div className="flex flex-wrap gap-1">
-                        <span className="font-normal mr-1">Payment:</span>
-                        {supplier.paymentMethods.map(method => (
-                           <span key={method} className="bg-brand-dark text-xs font-semibold text-gray-300 px-2 py-0.5 rounded-full">{method}</span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
             </div>
           ) : (
-             <NoResults />
+            suppliers.length > 0 ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {suppliers.map((supplier, index) => (
+                        <div key={index} className="bg-brand-secondary border border-gray-700 rounded-lg p-6 flex flex-col justify-between space-y-4 hover:border-brand-primary transition-colors">
+                        <div>
+                            <div className="flex justify-between items-start">
+                            <h3 className="text-xl font-bold text-white">{supplier.name}</h3>
+                            <a href={supplier.website} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-brand-primary">
+                                <ExternalLink size={20} />
+                            </a>
+                            </div>
+                            <p className="text-gray-400 text-sm flex items-center mt-2">
+                            <MapPin size={14} className="mr-2 flex-shrink-0" />
+                            {supplier.location}
+                            </p>
+                        </div>
+                        <div className="text-sm space-y-3 text-gray-300 pt-4 border-t border-gray-700">
+                            <p className="flex items-center"><Clock size={14} className="mr-2 flex-shrink-0 text-brand-accent" />Lead Time: <span className="font-semibold ml-1">{supplier.leadTime}</span></p>
+                            <div className="flex items-start">
+                            <CreditCardIcon size={14} className="mr-2 mt-1 flex-shrink-0 text-brand-accent" />
+                            <div className="flex flex-wrap gap-1">
+                                <span className="font-normal mr-1">Payment:</span>
+                                {supplier.paymentMethods.map(method => (
+                                <span key={method} className="bg-brand-dark text-xs font-semibold text-gray-300 px-2 py-0.5 rounded-full">{method}</span>
+                                ))}
+                            </div>
+                            </div>
+                        </div>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <NoResults />
+            )
           )}
         </div>
       )}
-
-      {isLoading && (
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-4">Searching...</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-          </div>
-        </div>
-      )}
-
     </div>
   );
 };
