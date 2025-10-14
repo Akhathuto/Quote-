@@ -1,20 +1,45 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Edgtec RFQ Assistant
 
-# Run and deploy your AI Studio app
+An intelligent application designed to streamline the quotation and RFQ (Request for Quotation) process for South African businesses. This tool helps users find verified, trusted suppliers by leveraging the power of AI. Users can upload RFQ documents, specification sheets, and company logos to generate professional documents and discover the best partners for their procurement needs.
 
-This contains everything you need to run your app locally.
+## About the Owner - Edgtec Pty Ltd
 
-View your app in AI Studio: https://ai.studio/apps/drive/1WIJB7pr7ZBXIq3L_E5BvHqrrevlUJv5k
+This application is developed and owned by **Edgtec Pty Ltd**, a registered South African company dedicated to creating innovative technology solutions for local businesses.
 
-## Run Locally
+| Detail                      | Information                                  |
+| --------------------------- | -------------------------------------------- |
+| **Legal Name**              | EDGTEC                                       |
+| **Company Type**            | Private Company (Pty) Ltd                    |
+| **Registration Number**     | `2025/534716/07`                             |
+| **CSD Supplier Number**     | `MAAA1626554`                                |
+| **B-BBEE Status**           | Level 1 (100% Black Owned, 100% Youth Owned) |
+| **Primary Contact Email**   | `r.lepheane@outlook.com`                     |
+| **Registered Address**      | Springs, Gauteng, South Africa               |
 
-**Prerequisites:**  Node.js
+### Ownership Structure
 
+Edgtec Pty Ltd is proudly owned and managed by young South African entrepreneurs:
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+-   **Ranthutu Lepheane:** 70% Shareholder
+-   **Siphosakhe Mathews Msimango:** 30% Shareholder
+
+## Key Features
+
+-   **AI-Powered Supplier Discovery:** Utilizes Google's Gemini API to find the most relevant and trusted suppliers in South Africa based on your RFQ.
+-   **Compulsory Supplier Verification:** Gathers essential supplier details, including website, location, lead times, and payment methods.
+-   **Document Management:** Easily upload RFQ documents, specification sheets, spreadsheets, and company logos.
+-   **Automated Document Generation:** Creates professionally designed spreadsheets and PDFs for your quotations.
+-   **User-Friendly Interface:** A clean, modern, and responsive UI for a seamless experience.
+-   **Profile & Payment Management:** Securely manage your user profile and subscription settings.
+
+## Tech Stack
+
+-   **Framework:** React
+-   **Language:** TypeScript
+-   **Styling:** Tailwind CSS
+-   **AI & Machine Learning:** Google Gemini API
+-   **Routing:** React Router
+
+## Deployment
+
+This application is designed for a seamless CI/CD (Continuous Integration/Continuous Deployment) workflow. The codebase is hosted on GitHub, and deployments are automatically handled by **Vercel**, ensuring high availability and performance.
