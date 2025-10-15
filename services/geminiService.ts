@@ -1,14 +1,10 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import type { RFQ, Supplier } from '../types';
 
-if (!process.env.API_KEY) {
-  // In a real app, you'd want to handle this more gracefully.
-  // For this context, we assume the environment variable is set.
-  console.warn("API_KEY environment variable not set. Gemini API calls will fail.");
-}
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
+// Fix: Per coding guidelines, the API key must be obtained from `process.env.API_KEY`.
+// This also resolves the TypeScript error with `import.meta.env`.
+// The API key's presence is assumed and should not be checked.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const supplierSchema = {
   type: Type.ARRAY,
@@ -84,6 +80,7 @@ export const findSuppliers = async (rfq: RFQ): Promise<Supplier[]> => {
 
   } catch (error) {
     console.error("Error calling Gemini API:", error);
-    throw new Error("Failed to fetch supplier information. Please check your API key and try again.");
+    // Fix: Updated error message to be more generic and not mention the API key, per guidelines.
+    throw new Error("Failed to fetch supplier information. Please try again later.");
   }
 };
