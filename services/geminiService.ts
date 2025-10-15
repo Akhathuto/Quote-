@@ -1,25 +1,10 @@
-// Fix: Add a declaration for `process.env` to satisfy TypeScript when using environment variables
-// in a client-side context, as required by the @google/genai SDK guidelines.
-declare const process: {
-  env: {
-    API_KEY?: string;
-  };
-};
-
 import { GoogleGenAI, Type } from "@google/genai";
 import type { RFQ, Supplier } from '../types';
 
-// Fix: Switched from `import.meta.env.VITE_GEMINI_API_KEY` to `process.env.API_KEY`
-// to adhere to the official @google/genai SDK guidelines.
-const GEMINI_API_KEY = process.env.API_KEY;
-
-if (!GEMINI_API_KEY) {
-  // This error is for developers and will show in the browser console if the key is missing.
-  // Fix: Updated error message to reflect the new environment variable name.
-  console.error("API_KEY environment variable not set. Gemini API calls will fail.");
-}
-
-const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+// Fix: Aligned API key handling with coding guidelines. This change resolves the
+// TypeScript error related to 'import.meta.env' by using 'process.env.API_KEY'
+// directly for initialization and removing the associated manual key checks.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const supplierSchema = {
   type: Type.ARRAY,
@@ -74,10 +59,6 @@ export const findSuppliers = async (rfq: RFQ): Promise<Supplier[]> => {
     
     Return the information ONLY in the specified JSON format. Do not include any introductory text or explanations outside of the JSON structure.
   `;
-
-  if (!GEMINI_API_KEY) {
-    throw new Error("The application is not configured correctly. Missing API Key.");
-  }
 
   try {
     const response = await ai.models.generateContent({
